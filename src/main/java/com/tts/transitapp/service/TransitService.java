@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.tts.transitapp.model.Bus;
+import com.tts.transitapp.model.DistanceResponse;
 import com.tts.transitapp.model.GeocodingResponse;
 import com.tts.transitapp.model.Location;
 
@@ -39,6 +40,14 @@ public class TransitService{
         GeocodingResponse response = restTemplate.getForObject(url, GeocodingResponse.class);
         return response.results.get(0).geometry.location;
     }
-  
+    
+    private double getDistance(Location origin, Location destination){
+        String url = distanceUrl + "origins=" + origin.lat + "," + origin.lng
+        + "&destinations=" + destination.lat + "," + destination.lng + "&key=" + googleApiKey;
+        RestTemplate restTemplate = new RestTemplate();
+        DistanceResponse response = restTemplate.getForObject(url, DistanceResponse.class);
+        return response.rows.get(0).elements.get(0).distance.value * 0.000621371;
+    }
+    
     
 }
