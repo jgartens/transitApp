@@ -1,9 +1,13 @@
 package com.tts.transitapp.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.tts.transitapp.model.Bus;
+import com.tts.transitapp.model.BusComparator;
+import com.tts.transitapp.model.BusRequest;
 import com.tts.transitapp.model.DistanceResponse;
 import com.tts.transitapp.model.GeocodingResponse;
 import com.tts.transitapp.model.Location;
@@ -49,5 +53,31 @@ public class TransitService{
         return response.rows.get(0).elements.get(0).distance.value * 0.000621371;
     }
     
+    public List<Bus> getNearbyBuses(BusRequest request){
+        List<Bus> allBuses = this.getBuses();
+        Location personLocation = this.getCoordinates(request.address + " " + request.city);
+        List<Bus> nearbyBuses = new ArrayList<>();
+        for(Bus bus : allBuses) {
+            Location busLocation = new Location();
+            busLocation.lat = bus.LATITUDE;
+            busLocation.lng = bus.LONGITUDE;
+            double latDistance = Double.parseDouble(busLocation.lat) - Double.parseDouble(personLocation.lat);
+            double lngDistance = Double.parseDouble(busLocation.lng) - Double.parseDouble(personLocation.lng);
+            if (Math.abs(latDistance) <= 0.02 && Math.abs(lngDistance) <= 0.02) {
+                double distance = getDistance(busLocation, personLocation);
+                if (distance <= 1) {
+                    bus.distance = (double) Math.round(distance * 100) / 100;
+                    nearbyBuses.add(bus);
+                }
+            }
+        }
+        Collections.sort(nearbyBuses, new BusComparator());
+        return nearbyBuses;
+    }
+
+    public void run(){
+        System.out.println(getBuses());
+        System.out.println(getCoordinates("65 Alabama St SW"));
+    }
     
 }
